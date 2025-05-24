@@ -3,7 +3,33 @@ from telebot import types, TeleBot
 from Modules.DataBaseManager import DataBaseManager
 from Modules.WorkingTeamInformationCollection import WorkingTeamInformation
 
-class TGNavigationMenuManager:
+class TGNavigationMenuManagerValidator():
+    def __init__(self, status=True):
+        self.indexes_routes = [0, 1, 2, 3, 4]
+        self.status = status
+        self.message = str 
+    
+    def available_routes(self) -> list:
+        router = list()
+        navigator = TGNavigationMenuManager()
+        for indexer_rout in navigator.main_menu_content:
+            for route_name in navigator.main_menu_content[indexer_rout]["menu"]:
+                router.append(route_name)
+        return router
+
+    def set_error(self, message: str):
+        if message != "":
+            self.chValidator = False
+            self.message = message
+    
+    def reset(self):
+        self.chValidator = True
+        self.message = ""
+
+    def get_error(self) -> str:
+        return self.message
+
+class TGNavigationMenuManager():
     def __init__(self):
         self.navIndex = 0
         self.main_menu_content = {
@@ -50,14 +76,7 @@ class TGNavigationMenuManager:
                     "Выход"#Ready
                 ]
             }
-            
         }
-    
-    def message_analys(self, message):
-        match(message):
-
-            case "Выход":
-                self.set_default()
 
     def set_default(self):
         self.navIndex = 0
@@ -112,14 +131,14 @@ class TGNavigationMenuManager:
                 self.navIndex = 0
 
             case _:
-                telebot.send_message(message.chat.id, "Указанная вами функция, либо находится в разработке,\nлибо не предусмотрена разработчиком")
+                telebot.send_message(message.chat.id, "Указанная вами функция находится в разработке.")
                 self.navIndex = 0
-    
-    def defender_menu_manager(self, message, allowed_indexes) -> bool:
-        tg_navigation_menu_manager_validator = TGNavifationMenuManagerValidator()
 
-
+    #Создаёт меню исходя из указателя
     def chatMenuCreator(self) -> types.ReplyKeyboardMarkup:
+        '''
+        Получается индекс и исходя из него получает необходимое меню
+        '''
         keyboard = types.ReplyKeyboardMarkup(row_width=self.main_menu_content[self.navIndex]["flew_row"])
         for btn in self.main_menu_content[self.navIndex]["menu"]:
             keyboard.add(types.KeyboardButton(btn))

@@ -1,4 +1,4 @@
-from Modules.DefenderTelegrmamNavigationMenuManager import TGNavigationMenuManagerValidator
+from Modules.TelegramNavigationMenuManager import TGNavigationMenuManagerValidator
 
-
-TGNavigationMenuManagerValidator.available_routes()
+validator = TGNavigationMenuManagerValidator()
+print(validator.available_routes())
