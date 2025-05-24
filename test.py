@@ -1,0 +1,4 @@
+from Modules.DefenderTelegrmamNavigationMenuManager import TGNavigationMenuManagerValidator
+
+
+TGNavigationMenuManagerValidator.available_routes()

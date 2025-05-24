@@ -1,0 +1,19 @@
+def select_for_scout_contengent_format_FIO_Date() -> list:
+    workining_team = WorkingTeamInformation().get_working_man_list_fio()
+    testing_today = datetime(year=2025, month=5, day=13)
+    period_of_time = 1
+
+    if testing_today.weekday() == 0:
+        period_of_time = 0
+    elif testing_today.weekday() == 6:
+        period_of_time = 2
+
+    query = 'SELECT [Основная таблица выписки].[Поступление-Отделение], [Основная таблица выписки].[Поcтупление-Койка], [Основная таблица выписки].Фамилия, [Основная таблица выписки].Имя, [Основная таблица выписки].Отчество, [Основная таблица выписки].[Дата выписки], [Основная таблица выписки].Контингент FROM [Основная таблица выписки] ORDER BY [Основная таблица выписки].[Дата выписки] DESC;'
+    buffer = connection_access_database(MAIN_PATH, query)
+    buffer = buffer[buffer["Дата выписки"] >= (testing_today - timedelta(days=period_of_time))]
+    buffer = buffer[buffer["Контингент"] >= "По призыву"]
+
+    buffer["Полное ФИО"] = buffer["Фамилия"] + " " + buffer["Имя"] + " " + buffer["Отчество"]
+    buffer = buffer[buffer["Полное ФИО"].isin(workining_team)]
+
+    return (buffer.iloc[:, 7].astype(str) + ' | Дата выписки:  ' + buffer.iloc[:, 5].dt.strftime('%d.%m.%Y')).tolist()
