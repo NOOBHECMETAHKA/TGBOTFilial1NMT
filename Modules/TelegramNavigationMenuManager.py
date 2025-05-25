@@ -5,7 +5,7 @@ from Modules.WorkingTeamInformationCollection import WorkingTeamInformation
 
 class TGNavigationMenuManagerValidator():
     def __init__(self):
-        self.inputer_indexes = [99]
+        self.inputer_indexes = [98, 99]
     
     def available_routes(self) -> list:
         router = list()
@@ -61,6 +61,24 @@ class TGNavigationMenuManager():
                     "Поиск человека по ФИО",
                     "Выход"#Ready
                 ]
+            },
+            5: {
+                "flew_row": 5,
+                "menu": {
+                    "1/2":[1, 2],
+                    "3":[3],
+                    "4/5":[4, 5],
+                    "6/7":[6, 7],
+                    "10/11":[10, 11],
+                    "16/36":[16, 36],
+                    "17":[17],
+                    "18":[18],
+                    "19":[19],
+                    "21":[21],
+                    "24/25/26":[24, 25, 26],
+                    "32":[32],
+                    "33":[33]
+                }
             }
         }
 
@@ -111,11 +129,12 @@ class TGNavigationMenuManager():
                 telebot.send_message(message.chat.id, "Подождите секунд 5... Щас поищу файл рабочки (-_-)!")
                 with open(src, 'rb') as excel_file:
                     telebot.send_document(message.chat.id, excel_file)
+                self.navIndex = 0
             
             case "Найти рабочку по ФИО":
                 self.navIndex = 99
                 telebot.send_message(message.chat.id, "Введите примерный отрезок ФИО:")
-      
+
             #Постоянный функционал
             case "Выход":
                 self.navIndex = 0
@@ -144,3 +163,13 @@ class TGNavigationMenuManager():
         for btn in self.main_menu_content[self.navIndex]["menu"]:
             keyboard.add(types.KeyboardButton(btn))
         return keyboard
+    
+    def chatMenuCreatorByIndex(self, index: int) -> types.ReplyKeyboardMarkup:
+        '''
+        Получается индекс и исходя из него получает необходимое меню
+        '''
+        keyboard = types.ReplyKeyboardMarkup(row_width=self.main_menu_content[index]["flew_row"])
+        for btn in self.main_menu_content[self.navIndex]["menu"]:
+            keyboard.add(types.KeyboardButton(btn))
+        return keyboard
+        

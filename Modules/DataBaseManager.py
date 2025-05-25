@@ -16,6 +16,7 @@ class DataBaseManager:
         "OCT": "Project_2010_Mail_Otc.accdb",
         "TEST": "test.accdb"
     }
+    
 
     def __init__(self, ref="TEST", name="TEST"):
         #Постоянный подключения к базу данных
@@ -82,4 +83,7 @@ class DataBaseManager:
             for index_row, formatted_row in enumerate(specific_formatted.iloc[:, 7].astype(str) + ' | Дата выписки:  ' + specific_formatted.iloc[:, 5].dt.strftime('%d.%m.%Y').tolist()):
                 formatted_sheet += f"{index_row + 1}. {formatted_row}\n"
         return formatted_sheet
+    
+    
+
     

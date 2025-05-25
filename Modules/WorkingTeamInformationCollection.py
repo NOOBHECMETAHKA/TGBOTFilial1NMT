@@ -53,5 +53,3 @@ class WorkingTeamInformation():
         else:
             buffer += "Ничего не найдено! Попробуй найти другое сочетание букв."
         return buffer
-    
-print(WorkingTeamInformation().find_working_man_from_working_team_by_military_unit_text_card(55591))

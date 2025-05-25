@@ -1,19 +1,71 @@
-def select_for_scout_contengent_format_FIO_Date() -> list:
-    workining_team = WorkingTeamInformation().get_working_man_list_fio()
-    testing_today = datetime(year=2025, month=5, day=13)
-    period_of_time = 1
 
-    if testing_today.weekday() == 0:
-        period_of_time = 0
-    elif testing_today.weekday() == 6:
-        period_of_time = 2
+match message.text:
+    #Передвижение по меню
+    case "Выписка":
+        self.navIndex = 2
 
-    query = 'SELECT [Основная таблица выписки].[Поступление-Отделение], [Основная таблица выписки].[Поcтупление-Койка], [Основная таблица выписки].Фамилия, [Основная таблица выписки].Имя, [Основная таблица выписки].Отчество, [Основная таблица выписки].[Дата выписки], [Основная таблица выписки].Контингент FROM [Основная таблица выписки] ORDER BY [Основная таблица выписки].[Дата выписки] DESC;'
-    buffer = connection_access_database(MAIN_PATH, query)
-    buffer = buffer[buffer["Дата выписки"] >= (testing_today - timedelta(days=period_of_time))]
-    buffer = buffer[buffer["Контингент"] >= "По призыву"]
+    case "Рабочка":
+        self.navIndex = 3
+    
+    case "Поиск по базе":
+        self.navIndex = 4
+    
+    case "Выключение устройства":
+        self.navIndex = 1
 
-    buffer["Полное ФИО"] = buffer["Фамилия"] + " " + buffer["Имя"] + " " + buffer["Отчество"]
-    buffer = buffer[buffer["Полное ФИО"].isin(workining_team)]
+    #Выключение устройства
+    case "Плановое выключение через час":
+        os.system("shutdown /s /t 3600")
+        telebot.send_message(message.chat.id, "Запланировано выключение через 1 час")
+        self.navIndex = 0
 
-    return (buffer.iloc[:, 7].astype(str) + ' | Дата выписки:  ' + buffer.iloc[:, 5].dt.strftime('%d.%m.%Y')).tolist()
+    case "Плановое выключение через 20 минут":
+        os.system("shutdown /s /t 1200")
+        telebot.send_message(message.chat.id, "Запланировано выключение через 20 минут")
+        self.navIndex = 0
+
+    case "Отмена выключения":
+        os.system("shutdown /a")
+        telebot.send_message(message.chat.id, "Запланированное выключение отменено")
+        self.navIndex = 0
+
+    #Выписка
+    case "Выписка рабочей команды (Плановая)":
+        base_manager = DataBaseManager()
+        telebot.send_message(message.chat.id, "Подождите секунд 5... Щас сделаю выписку (-_-)!")
+        telebot.send_message(message.chat.id, base_manager.select_for_scout_contengent_format_FIO_Date())
+        self.navIndex = 0
+    
+    #Рабочка
+    case "Получить файл рабочей команды":
+        src = WorkingTeamInformation().file_path_of_working_class
+        telebot.send_message(message.chat.id, "Подождите секунд 5... Щас поищу файл рабочки (-_-)!")
+        with open(src, 'rb') as excel_file:
+            telebot.send_document(message.chat.id, excel_file)
+    
+    case "Найти рабочку по ФИО":
+        self.navIndex = 99
+        telebot.send_message(message.chat.id, "Введите примерный отрезок ФИО:")
+
+    case "Найти рабочку по части":
+        self.navIndex = 5
+        telebot.send_message(message.chat.id, "Выбирите часть:")
+
+    #Постоянный функционал
+    case "Выход":
+        self.navIndex = 0
+
+    case _:
+        validator = TGNavigationMenuManagerValidator()
+        if self.navIndex in validator.inputer_indexes:
+            match self.navIndex:
+                case 99:
+                    working_team_manager = WorkingTeamInformation()
+                    telebot.send_message(message.chat.id, working_team_manager.find_working_man_from_working_team_by_fullname_text_card(message.text))
+                    self.navIndex = 0
+                case _:
+                    telebot.send_message(message.chat.id, "Указанная вами принимающая функция не найдена!")
+                    self.navIndex = 0
+        else:          
+            telebot.send_message(message.chat.id, "Указанная вами функция не найдена!")
+            self.navIndex = 0

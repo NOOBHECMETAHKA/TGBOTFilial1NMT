@@ -1,4 +1,5 @@
-from Modules.TelegramNavigationMenuManager import TGNavigationMenuManagerValidator
+from Modules.TelegramNavigationMenuManager import TGNavigationMenuManager
 
-validator = TGNavigationMenuManagerValidator()
-print(validator.available_routes())
+menu = TGNavigationMenuManager()
+for element in menu.main_menu_content[5]["menu"]:
+    print(element)
