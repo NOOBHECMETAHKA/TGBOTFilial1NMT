@@ -4,10 +4,8 @@ from Modules.DataBaseManager import DataBaseManager
 from Modules.WorkingTeamInformationCollection import WorkingTeamInformation
 
 class TGNavigationMenuManagerValidator():
-    def __init__(self, status=True):
-        self.indexes_routes = [0, 1, 2, 3, 4]
-        self.status = status
-        self.message = str 
+    def __init__(self):
+        self.inputer_indexes = [99]
     
     def available_routes(self) -> list:
         router = list()
@@ -16,18 +14,6 @@ class TGNavigationMenuManagerValidator():
             for route_name in navigator.main_menu_content[indexer_rout]["menu"]:
                 router.append(route_name)
         return router
-
-    def set_error(self, message: str):
-        if message != "":
-            self.chValidator = False
-            self.message = message
-    
-    def reset(self):
-        self.chValidator = True
-        self.message = ""
-
-    def get_error(self) -> str:
-        return self.message
 
 class TGNavigationMenuManager():
     def __init__(self):
@@ -62,9 +48,9 @@ class TGNavigationMenuManager():
             3: {
                 "flew_row": 1,
                 "menu": [
-                    "Получить файл рабочей команды",
+                    "Получить файл рабочей команды",#Ready
                     "Получить список для построяния",
-                    "Найти рабочку по ФИО",
+                    "Найти рабочку по ФИО",#Ready
                     "Найти рабочку по части",
                     "Выход"#Ready
                 ]
@@ -126,13 +112,28 @@ class TGNavigationMenuManager():
                 with open(src, 'rb') as excel_file:
                     telebot.send_document(message.chat.id, excel_file)
             
+            case "Найти рабочку по ФИО":
+                self.navIndex = 99
+                telebot.send_message(message.chat.id, "Введите примерный отрезок ФИО:")
+      
             #Постоянный функционал
             case "Выход":
                 self.navIndex = 0
 
             case _:
-                telebot.send_message(message.chat.id, "Указанная вами функция находится в разработке.")
-                self.navIndex = 0
+                validator = TGNavigationMenuManagerValidator()
+                if self.navIndex in validator.inputer_indexes:
+                    match self.navIndex:
+                        case 99:
+                            working_team_manager = WorkingTeamInformation()
+                            telebot.send_message(message.chat.id, working_team_manager.find_working_man_from_working_team_by_fullname_text_card(message.text))
+                            self.navIndex = 0
+                        case _:
+                            telebot.send_message(message.chat.id, "Указанная вами принимающая функция не найдена!")
+                            self.navIndex = 0
+                else:          
+                    telebot.send_message(message.chat.id, "Указанная вами функция не найдена!")
+                    self.navIndex = 0
 
     #Создаёт меню исходя из указателя
     def chatMenuCreator(self) -> types.ReplyKeyboardMarkup:
