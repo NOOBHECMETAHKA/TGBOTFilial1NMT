@@ -1,12 +1,15 @@
 import pandas
 
 class WorkingTeamInformation():
-    def __init__(self, file_path_of_working_class=f"C:\\Users\\Sharpanskih\\Desktop\\Список рабочей команды.xlsx"):
+    def __init__(self, file_path_of_working_class=f"C:\\Users\\Админ\\Desktop\\Список рабочей команды.xlsx"):
         self.file_path_of_working_class = file_path_of_working_class
         self.dataframe_working_team = pandas.read_excel(self.file_path_of_working_class, engine='openpyxl', skiprows=1, sheet_name="Рабочка")
     
     def get_working_man_list_fio(self) -> list:
         df = self.dataframe_working_team
+        df["Фамилия"] = df["Фамилия"].str.strip()
+        df["Имя"] = df["Имя"].str.strip()
+        df["Отчество"] = df["Отчество"].str.strip()
         return (df.iloc[:, 9].astype(str) + ' ' + df.iloc[:, 10].astype(str) + ' ' + df.iloc[:, 11].astype(str)).tolist()
     
     def find_working_man_from_working_team_by_fullname(self, FullName: str) -> pandas.DataFrame:

@@ -39,12 +39,12 @@ if __name__ == "__main__":
     @bot.message_handler(content_types="text")
     def main_function(message):
         print(f"Индификатор чата: {message.from_user.id}; Сслыка на пользователя: t.me/{message.from_user.username}; Сообщение от пользователя: {message.text}")
-        if menu_manager.navIndex in validator.inputer_indexes:
+        if message.from_user.id in collectionIDS:
             menu_manager.navigation(message=message, telebot=bot)
-            bot.reply_to(message, "Выбирите функцию на панели!", reply_markup=menu_manager.chatMenuCreator())
+            if menu_manager.navIndex not in validator.inputer_indexes:
+                bot.reply_to(message, "Выбирите функцию на панели!", reply_markup=menu_manager.chatMenuCreator())
         else:
             bot.reply_to(message, "У вас нету прав к функциям бота!")
         
-
 bot.infinity_polling()
 

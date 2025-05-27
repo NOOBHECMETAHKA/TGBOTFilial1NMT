@@ -18,7 +18,7 @@ class DataBaseManager:
     }
     
 
-    def __init__(self, ref="TEST", name="TEST"):
+    def __init__(self, ref="SERVER", name="OCT"):
         #Постоянный подключения к базу данных
         self.MAIN_PATH = self.REF_TO_DATABASE[ref].format(self.TITLE_DATABASE[name])
     
@@ -57,7 +57,7 @@ class DataBaseManager:
         buffer = buffer[buffer["Контингент"] == "По призыву"]
         return buffer
     
-    def select_for_scout_contengent_format_FIO_Date(self, target_date=datetime(2025, 5, 5)):
+    def select_for_scout_contengent_format_FIO_Date(self, target_date=datetime.combine(date=datetime.today(), time=datetime.min.time())):
         workining_team = WorkingTeamInformation().get_working_man_list_fio()
         period_of_time = 1
 
@@ -71,6 +71,10 @@ class DataBaseManager:
         buffer = buffer[buffer["Дата выписки"] >= (target_date - timedelta(days=period_of_time))]
         buffer = buffer[buffer["Контингент"] >= "По призыву"]
 
+        buffer["Фамилия"] = buffer["Фамилия"].str.strip()
+        buffer["Имя"] = buffer["Имя"].str.strip()
+        buffer["Отчество"] = buffer["Отчество"].str.strip()
+
         buffer["Полное ФИО"] = buffer["Фамилия"] + " " + buffer["Имя"] + " " + buffer["Отчество"]
         buffer = buffer[buffer["Полное ФИО"].isin(workining_team)]
         
@@ -83,6 +87,8 @@ class DataBaseManager:
             for index_row, formatted_row in enumerate(specific_formatted.iloc[:, 7].astype(str) + ' | Дата выписки:  ' + specific_formatted.iloc[:, 5].dt.strftime('%d.%m.%Y').tolist()):
                 formatted_sheet += f"{index_row + 1}. {formatted_row}\n"
         return formatted_sheet
+    
+    
     
     
 
