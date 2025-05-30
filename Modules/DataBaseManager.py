@@ -88,6 +88,22 @@ class DataBaseManager:
                 formatted_sheet += f"{index_row + 1}. {formatted_row}\n"
         return formatted_sheet
     
+    def select_oct_contengent_for_military_unit(self, military_number, with_working_team=True, target_date=datetime.combine(date=datetime.today(), time=datetime.min.time())):
+        df = self.select_from_year_OCT()
+        df["ФИО"] = df["Фамилия"].str.strip() + " " + df["Имя"].str.strip() + " " + df["Отчество"].str.strip()
+        df = df[df["Войсковая часть"] == f"{military_number}"]
+        df = df[df["Дата выписки"] >= target_date]
+        request_dict = df.to_dict(orient="index")
+        buffer = ""
+        if len(request_dict) > 0:
+            for num, index_person in enumerate(request_dict):
+                person = request_dict[index_person]
+                buffer += f"{num + 1}. Дата поступления: {person["Дата поступления"].strftime('%d.%m.%Y')}; Дата выписки: {person["Дата выписки"].strftime('%d.%m.%Y')}; Направление: {(person["Направление выписки"])}{(" : " + person["В Другое ЛПУ"]) if (person["В Другое ЛПУ"]) is not None else ""}; {person["Воинское звание"]} {person["ФИО"]}; Диагноз: {person["Диагноз"]}\n"
+        else:
+            buffer += "Выписанных нету"
+        return buffer
+
+
     
     
     
