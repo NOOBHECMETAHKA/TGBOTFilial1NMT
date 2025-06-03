@@ -1,7 +1,8 @@
 import pandas
+from config import FILE_WORKING_TEAM
 
 class WorkingTeamInformation():
-    def __init__(self, file_path_of_working_class=f"C:\\Users\\Админ\\Desktop\\Список рабочей команды.xlsx"):
+    def __init__(self, file_path_of_working_class=FILE_WORKING_TEAM):
         self.file_path_of_working_class = file_path_of_working_class
         self.dataframe_working_team = pandas.read_excel(self.file_path_of_working_class, engine='openpyxl', skiprows=1, sheet_name="Рабочка")
     

@@ -1,45 +1,27 @@
-import pyodbc
-import pandas
+import pyodbc, pandas
 from datetime import datetime, timedelta 
 from Modules.WorkingTeamInformationCollection import WorkingTeamInformation
+from config import REF_TO_DATABASE, TITLE_DATABASE
 
 class DataBaseManager:
-    #Каталоги для подключения к базе данных
-    REF_TO_DATABASE = {
-        "SERVER": "\\\\192.168.3.13\\DatabaseEx\\{0}",
-        "ROOT_DIR": "C:\\DataBaseEX\\{0}",
-        "TEST": f"C:\\Users\\Sharpanskih\\Desktop\\" + "{0}"
-    } 
-    #Файлы для подключения к базе данных
-    TITLE_DATABASE = {
-        "INC": "Project_2010_Mail_Inc.accdb",
-        "OCT": "Project_2010_Mail_Otc.accdb",
-        "TEST": "test.accdb"
-    }
-    
-
-    def __init__(self, ref="SERVER", name="OCT"):
+    def __init__(self, ref="SERVER", name="TEST"):
         #Постоянный подключения к базу данных
-        self.MAIN_PATH = self.REF_TO_DATABASE[ref].format(self.TITLE_DATABASE[name])
-    
+        self.MAIN_PATH = REF_TO_DATABASE[ref].format(TITLE_DATABASE[name])
 
     #Получения DataFrame для дальнейшей обработки информации
     def connection_access_database(self, request: str) -> pandas.DataFrame:
         try:
+            print(self.MAIN_PATH)
             connection_str = r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
             connection_str += "DBQ={0};".format(self.MAIN_PATH)
             connection_to_database = pyodbc.connect(connection_str)
             data = pandas.read_sql(request, connection_to_database)
             return data
-        
         except pyodbc.Error as e:
             print("Ошибка подключения: ", e)
             pass
         except pandas.errors.DatabaseError as e:
             print("Ошибка ошибка в запрос к базе данных: ", e)
-        finally:
-            if not connection_to_database.closed:
-                connection_to_database.close()
     
     def select_from_year_OCT(self, year=datetime.now().year) -> pandas.DataFrame:
         """
@@ -88,19 +70,36 @@ class DataBaseManager:
                 formatted_sheet += f"{index_row + 1}. {formatted_row}\n"
         return formatted_sheet
     
-    def select_oct_contengent_for_military_unit(self, military_number, with_working_team=True, target_date=datetime.combine(date=datetime.today(), time=datetime.min.time())):
+    def select_oct_contengent_for_military_unit(self, military_number, target_date=datetime.combine(date=datetime.today(), time=datetime.min.time())):
         df = self.select_from_year_OCT()
+        workining_team = WorkingTeamInformation().get_working_man_list_fio()
+
+        target_date = datetime(2025, 5, 22)
+
         df["ФИО"] = df["Фамилия"].str.strip() + " " + df["Имя"].str.strip() + " " + df["Отчество"].str.strip()
         df = df[df["Войсковая часть"] == f"{military_number}"]
         df = df[df["Дата выписки"] >= target_date]
-        request_dict = df.to_dict(orient="index")
+
+        df_with_working_team = (df[df["ФИО"].isin(workining_team)]).to_dict(orient="index")
+        df_with_out_working_team = (df[~df["ФИО"].isin(workining_team)]).to_dict(orient="index")
+
         buffer = ""
-        if len(request_dict) > 0:
-            for num, index_person in enumerate(request_dict):
-                person = request_dict[index_person]
+        buffer += "Список:\n"
+        if len(df_with_out_working_team) > 0:
+            for num, index_person in enumerate(df_with_out_working_team):
+                person = df_with_out_working_team[index_person]
                 buffer += f"{num + 1}. Дата поступления: {person["Дата поступления"].strftime('%d.%m.%Y')}; Дата выписки: {person["Дата выписки"].strftime('%d.%m.%Y')}; Направление: {(person["Направление выписки"])}{(" : " + person["В Другое ЛПУ"]) if (person["В Другое ЛПУ"]) is not None else ""}; {person["Воинское звание"]} {person["ФИО"]}; Диагноз: {person["Диагноз"]}\n"
         else:
-            buffer += "Выписанных нету"
+            buffer += "Выписанных нету\n"
+
+        buffer += "Список с рабочей командой:\n"
+        if len(df_with_working_team) > 0:
+            for num, index_person in enumerate(df_with_working_team):
+                person = df_with_working_team[index_person]
+                buffer += f"{num + 1}. Дата поступления: {person["Дата поступления"].strftime('%d.%m.%Y')}; Дата выписки: {person["Дата выписки"].strftime('%d.%m.%Y')}; Направление: {(person["Направление выписки"])}{(" : " + person["В Другое ЛПУ"]) if (person["В Другое ЛПУ"]) is not None else ""}; {person["Воинское звание"]} {person["ФИО"]}; Диагноз: {person["Диагноз"]}\n"
+        else:
+            buffer += "Выписанных нету\n"
+
         return buffer
 
 

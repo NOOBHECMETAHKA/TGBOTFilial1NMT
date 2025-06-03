@@ -34,6 +34,7 @@ class TGNavigationMenuManager():
                     "Плановое выключение через час", #Ready
                     "Плановое выключение через 20 минут", #Ready
                     "Отмена выключения", #Ready
+                    "Отключение бота", #Ready
                     "Выход" #Ready
                 ]
             },
@@ -111,6 +112,11 @@ class TGNavigationMenuManager():
                 telebot.send_message(message.chat.id, "Запланировано выключение через 20 минут")
                 self.navIndex = 0
 
+            case "Отключение бота":
+                telebot.send_message(message.chat.id, "Отключаюсь!")
+                telebot.stop_polling()
+                self.navIndex = 0
+
             case "Отмена выключения":
                 os.system("shutdown /a")
                 telebot.send_message(message.chat.id, "Запланированное выключение отменено")
@@ -122,6 +128,12 @@ class TGNavigationMenuManager():
                 telebot.send_message(message.chat.id, "Подождите секунд 5... Щас сделаю выписку (-_-)!")
                 telebot.send_message(message.chat.id, base_manager.select_for_scout_contengent_format_FIO_Date())
                 self.navIndex = 0
+
+            case "Выписка части (Плановая)":
+                self.navIndex = 98
+                working_team_manager = WorkingTeamInformation()
+                base_manager = DataBaseManager()
+                telebot.send_message(message.chat.id, "Введите номер части для формирования выписки:")
             
             #Рабочка
             case "Получить файл рабочей команды":
@@ -143,6 +155,11 @@ class TGNavigationMenuManager():
                 validator = TGNavigationMenuManagerValidator()
                 if self.navIndex in validator.inputer_indexes:
                     match self.navIndex:
+                        case 98:
+                            base_manager = DataBaseManager("TEST", "TEST")
+                            telebot.send_message(message.chat.id, "Подождите секунд 5... Щас сделаю выписку (-_-)!")
+                            telebot.send_message(message.chat.id, base_manager.select_oct_contengent_for_military_unit(message.text))
+                            self.navIndex = 0
                         case 99:
                             working_team_manager = WorkingTeamInformation()
                             telebot.send_message(message.chat.id, working_team_manager.find_working_man_from_working_team_by_fullname_text_card(message.text))
