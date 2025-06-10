@@ -92,6 +92,7 @@ class DataBaseManager:
         else:
             buffer += "Выписанных нету\n"
 
+        buffer += "***"
         buffer += "Список с рабочей командой:\n"
         if len(df_with_working_team) > 0:
             for num, index_person in enumerate(df_with_working_team):

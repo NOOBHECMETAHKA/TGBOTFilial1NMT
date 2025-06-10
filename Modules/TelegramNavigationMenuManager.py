@@ -156,9 +156,17 @@ class TGNavigationMenuManager():
                 if self.navIndex in validator.inputer_indexes:
                     match self.navIndex:
                         case 98:
-                            base_manager = DataBaseManager("TEST", "TEST")
+                            base_manager = DataBaseManager()
                             telebot.send_message(message.chat.id, "Подождите секунд 5... Щас сделаю выписку (-_-)!")
-                            telebot.send_message(message.chat.id, base_manager.select_oct_contengent_for_military_unit(message.text))
+                            content = base_manager.select_oct_contengent_for_military_unit(message.text)
+                            split_content = content.split("***")
+                            if len(content) > 1:
+                                telebot.send_message(message.chat.id, split_content[0])
+                                telebot.send_message(message.chat.id, split_content[1])
+                            elif len(content) == 1:
+                                telebot.send_message(message.chat.id, split_content[0])
+                            else:
+                                telebot.send_message(message.chat.id, content)
                             self.navIndex = 0
                         case 99:
                             working_team_manager = WorkingTeamInformation()
